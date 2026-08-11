@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>VALOR_OS // 스탯 계산기</title>
+<!-- BEGIN: External Resources -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;family=Inter:wght@400;500;700&amp;family=Jetbrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- END: External Resources -->
+<!-- BEGIN: Tailwind Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary-fixed-variant": "#454747",
+            "inverse-on-surface": "#2f3131",
+            "surface-dim": "#121414",
+            "on-primary-fixed": "#1a1c1c",
+            "error": "#ffb4ab",
+            "surface-container-highest": "#333535",
+            "primary-container": "#000000",
+            "on-background": "#e2e2e2",
+            "on-error": "#690005",
+            "surface-container-high": "#282a2b",
+            "outline": "#988e90",
+            "tertiary-container": "#000000",
+            "secondary-fixed": "#e2e2e2",
+            "tertiary-fixed-dim": "#c6c6c6",
+            "on-secondary-fixed": "#1a1c1c",
+            "inverse-primary": "#5d5f5f",
+            "secondary": "#c6c6c7",
+            "on-tertiary-container": "#757575",
+            "primary": "#c6c6c7",
+            "inverse-surface": "#e2e2e2",
+            "primary-fixed": "#e2e2e2",
+            "on-surface": "#e2e2e2",
+            "on-error-container": "#ffdad6",
+            "tertiary-fixed": "#e2e2e2",
+            "error-container": "#93000a",
+            "surface-container-low": "#1a1c1c",
+            "on-primary-container": "#747576",
+            "surface-tint": "#c6c6c7",
+            "secondary-container": "#454747",
+            "outline-variant": "#4c4546",
+            "tertiary": "#c6c6c6",
+            "on-secondary-container": "#b4b5b5",
+            "background": "#121414",
+            "surface-container-lowest": "#0c0f0f",
+            "primary-fixed-dim": "#c6c6c7",
+            "on-tertiary-fixed-variant": "#474747",
+            "on-surface-variant": "#cfc4c5",
+            "on-secondary": "#2f3131",
+            "surface-container": "#1e2020",
+            "on-tertiary-fixed": "#1b1b1b",
+            "surface": "#121414",
+            "on-tertiary": "#303030",
+            "on-primary": "#2f3131",
+            "surface-bright": "#38393a",
+            "secondary-fixed-dim": "#c6c6c7",
+            "surface-variant": "#333535",
+            "on-primary-fixed-variant": "#454747"
+          },
+          fontFamily: {
+            "headline": ["Space Grotesk"],
+            "display": ["Space Grotesk"],
+            "body": ["Inter"],
+            "label": ["Jetbrains Mono"]
+          }
+        }
+      }
+    };
+  </script>
+<!-- END: Tailwind Configuration -->
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="global-ui">
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      background-color: #0c0f0f;
+      color: #e2e2e2;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    main {
+      scroll-behavior: smooth; /* 스크롤을 부드럽게 만들어줍니다 */
+      -webkit-overflow-scrolling: touch; /* 모바일에서 관성 스크롤 최적화 */
+    }
+    /* -------------------------- */
+
+    /* Nature Matrix selection logic */
+    .nature-btn.active {
+      background-color: #c6c6c7 !important;
+    }
+
+    /* Interactive cursor for cyber feel */
+    * { cursor: crosshair !important; }
+    input:focus, select:focus { cursor: text !important; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+<!-- END: Custom Styles -->
+<style data-stitch-cursor="">*{cursor:crosshair!important}[contenteditable="true"]:focus,.cursor-text:focus{cursor:text!important}</style></head>
+<body class="bg-surface-container-lowest text-on-surface selection:bg-primary/30 min-h-screen font-body">
+<!-- BEGIN: TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="terminal">terminal</span>
+<h1 class="font-display text-xl text-primary tracking-tighter uppercase font-bold">계산기</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" data-icon="account_circle">account_circle</span>
+</div>
+</header>
+<!-- END: TopAppBar -->
+<!-- BEGIN: MainContent -->
+<main class="pt-20 pb-24 px-4 w-full max-w-lg mx-auto space-y-6">
+<!-- BEGIN: SearchSection -->
+<section class="space-y-4">
+<div class="space-y-1 relative" data-purpose="search-box" id="search-container">
+<div class="flex items-center justify-between mb-1">
+<label class="font-label text-[10px] text-on-surface-variant uppercase">포켓몬 검색</label>
+<button class="flex items-center gap-1.5 px-3 py-1 bg-primary text-surface-container-lowest rounded text-[9px] font-bold font-label hover:bg-primary/90 transition-all active:scale-95" id="save-btn">
+<span class="material-symbols-outlined text-[14px]" style='font-variation-settings: "FILL" 1;'>save</span>SAVE
+</button>
+</div>
+<div class="relative">
+<input autocomplete="off" class="w-full bg-surface-container-low border border-outline-variant rounded p-3 text-sm focus:border-primary outline-none font-label uppercase" id="pokemon-search" placeholder="검색해주세요..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-3 text-outline text-sm pointer-events-none" data-icon="search">search</span>
+</div>
+<!-- Search Dropdown -->
+<ul class="absolute z-50 w-full mt-1 bg-surface-container-high border border-outline-variant rounded max-h-48 overflow-y-auto no-scrollbar shadow-xl hidden" id="search-results">
+<!-- Dynamic results -->
+</ul>
+</div>
+<div class="space-y-1">
+<label class="font-label text-[10px] text-on-surface-variant uppercase ml-1">지닌 도구</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border border-outline-variant rounded p-3 text-sm focus:border-primary outline-none font-label appearance-none uppercase" id="item-select">
+<option>없음</option>
+<option>구애스카프</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 text-outline text-sm pointer-events-none" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+</div>
+</div>
+</section>
+<!-- END: SearchSection -->
+<!-- BEGIN: StatsDisplaySection -->
+<section class="bg-surface-container-low border border-outline-variant p-4 rounded shadow-inner" id="pokemon-stats-display" style="display: none;">
+<div class="flex justify-between items-end border-b border-outline-variant/30 pb-3 mb-4">
+<div>
+<h2 class="font-display text-lg font-bold text-primary" id="selected-pokemon-name">이름</h2>
+</div>
+<div class="text-right">
+<p class="font-label text-[10px] text-outline uppercase leading-none">실제 스탯 총합</p>
+<p class="font-label text-sm text-primary font-bold" id="total-base-stats">0</p>
+</div>
+</div>
+<div class="space-y-3" data-purpose="stat-bars">
+<!-- Stat Row HP -->
+<div class="flex items-center gap-3">
+<span class="w-14 font-label text-[11px] text-on-surface-variant uppercase text-right">HP</span>
+<div class="w-8 font-label text-xs text-on-surface text-right stat-val" id="stat-val-hp">0</div>
+<div class="flex-1 h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary/70 rounded-full transition-all duration-300" id="stat-bar-hp" style="width: 0%;"></div>
+</div>
+</div>
+<!-- Stat Row Attack -->
+<div class="flex items-center gap-3">
+<span class="w-14 font-label text-[11px] text-on-surface-variant uppercase text-right">공격</span>
+<div class="w-8 font-label text-xs text-on-surface text-right stat-val" id="stat-val-atk">0</div>
+<div class="flex-1 h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary/70 rounded-full transition-all duration-300" id="stat-bar-atk" style="width: 0%;"></div>
+</div>
+</div>
+<!-- Stat Row Defense -->
+<div class="flex items-center gap-3">
+<span class="w-14 font-label text-[11px] text-on-surface-variant uppercase text-right">방어</span>
+<div class="w-8 font-label text-xs text-on-surface text-right stat-val" id="stat-val-def">0</div>
+<div class="flex-1 h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary/70 rounded-full transition-all duration-300" id="stat-bar-def" style="width: 0%;"></div>
+</div>
+</div>
+<!-- Stat Row Sp. Atk -->
+<div class="flex items-center gap-3">
+<span class="w-14 font-label text-[11px] text-on-surface-variant uppercase text-right">특공</span>
+<div class="w-8 font-label text-xs text-on-surface text-right stat-val" id="stat-val-spa">0</div>
+<div class="flex-1 h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary/70 rounded-full transition-all duration-300" id="stat-bar-spa" style="width: 0%;"></div>
+</div>
+</div>
+<!-- Stat Row Sp. Def -->
+<div class="flex items-center gap-3">
+<span class="w-14 font-label text-[11px] text-on-surface-variant uppercase text-right">특방</span>
+<div class="w-8 font-label text-xs text-on-surface text-right stat-val" id="stat-val-spd">0</div>
+<div class="flex-1 h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary/70 rounded-full transition-all duration-300" id="stat-bar-spd" style="width: 0%;"></div>
+</div>
+</div>
+<!-- Stat Row Speed -->
+<div class="flex items-center gap-3">
+<span class="w-14 font-label text-[11px] text-on-surface-variant uppercase text-right">스피드</span>
+<div class="w-8 font-label text-xs text-on-surface text-right stat-val" id="stat-val-spe">0</div>
+<div class="flex-1 h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+<div class="h-full bg-primary/70 rounded-full transition-all duration-300" id="stat-bar-spe" style="width: 0%;"></div>
+</div>
+</div>
+</div>
+</section>
+<p class="text-center font-label text-[10px] text-on-surface-variant tracking-widest uppercase py-4" id="placeholder-text">포켓몬을 검색하세요</p>
+<!-- END: StatsDisplaySection -->
+<!-- BEGIN: SPAllocationSection -->
+<section class="bg-surface-container-low border border-outline-variant p-4 space-y-4 rounded" data-purpose="sp-inputs">
+<div class="flex justify-between items-center border-b border-outline-variant/30 pb-2">
+<h3 class="font-label text-xs text-primary uppercase font-bold">SP 배분 (LIMIT: 66)</h3>
+<span class="font-label text-[9px] text-outline">최대 32 / 합계 66</span>
+</div>
+<div class="grid grid-cols-2 gap-x-4 gap-y-3" id="sp-inputs-container">
+<!-- Input Pair template -->
+<div class="flex items-center justify-between bg-surface-container-lowest/50 p-1 rounded border border-transparent focus-within:border-primary/30">
+<span class="font-label text-[10px] text-on-surface-variant uppercase ml-2">HP</span>
+<input class="w-14 bg-surface-container-lowest border-none text-right font-label text-xs focus:ring-0 sp-input" data-label="HP" data-stat-index="0" max="32" min="0" type="number" value="0"/>
+</div>
+<div class="flex items-center justify-between bg-surface-container-lowest/50 p-1 rounded border border-transparent focus-within:border-primary/30">
+<span class="font-label text-[10px] text-on-surface-variant uppercase ml-2">공격</span>
+<input class="w-14 bg-surface-container-lowest border-none text-right font-label text-xs focus:ring-0 sp-input" data-label="Attack" data-stat-index="1" max="32" min="0" type="number" value="0"/>
+</div>
+<div class="flex items-center justify-between bg-surface-container-lowest/50 p-1 rounded border border-transparent focus-within:border-primary/30">
+<span class="font-label text-[10px] text-on-surface-variant uppercase ml-2">방어</span>
+<input class="w-14 bg-surface-container-lowest border-none text-right font-label text-xs focus:ring-0 sp-input" data-label="Defense" data-stat-index="2" max="32" min="0" type="number" value="0"/>
+</div>
+<div class="flex items-center justify-between bg-surface-container-lowest/50 p-1 rounded border border-transparent focus-within:border-primary/30">
+<span class="font-label text-[10px] text-on-surface-variant uppercase ml-2">특공</span>
+<input class="w-14 bg-surface-container-lowest border-none text-right font-label text-xs focus:ring-0 sp-input" data-label="Sp. Atk" data-stat-index="3" max="32" min="0" type="number" value="0"/>
+</div>
+<div class="flex items-center justify-between bg-surface-container-lowest/50 p-1 rounded border border-transparent focus-within:border-primary/30">
+<span class="font-label text-[10px] text-on-surface-variant uppercase ml-2">특방</span>
+<input class="w-14 bg-surface-container-lowest border-none text-right font-label text-xs focus:ring-0 sp-input" data-label="Sp. Def" data-stat-index="4" max="32" min="0" type="number" value="0"/>
+</div>
+<div class="flex items-center justify-between bg-surface-container-lowest/50 p-1 rounded border border-transparent focus-within:border-primary/30">
+<span class="font-label text-[10px] text-on-surface-variant uppercase ml-2">스피드</span>
+<input class="w-14 bg-surface-container-lowest border-none text-right font-label text-xs focus:ring-0 sp-input" data-label="Speed" data-stat-index="5" max="32" min="0" type="number" value="0"/>
+</div>
+</div>
+<div class="pt-2 border-t border-outline-variant/30 flex justify-between items-center">
+<div class="h-1 flex-1 bg-surface-container-lowest rounded-full overflow-hidden mr-4">
+<div class="h-full bg-primary transition-all duration-300" id="sp-total-bar" style="width: 0%;"></div>
+</div>
+<p class="font-label text-[10px] text-primary" id="sp-total-text">TOTAL 0 / 66</p>
+</div>
+</section>
+<!-- END: SPAllocationSection -->
+<!-- BEGIN: NatureMatrixSection -->
+<section class="space-y-3 pb-8">
+<h3 class="font-label text-xs text-primary uppercase px-1 font-bold">성격</h3>
+<div class="w-full overflow-x-auto no-scrollbar">
+<div class="grid grid-cols-[40px_repeat(5,1fr)] gap-1 min-w-[320px]">
+<!-- Header Row -->
+<div></div>
+<div class="text-center font-label text-[8px] text-on-surface-variant uppercase leading-tight">공격↓</div>
+<div class="text-center font-label text-[8px] text-on-surface-variant uppercase leading-tight">방어↓</div>
+<div class="text-center font-label text-[8px] text-on-surface-variant uppercase leading-tight">특공↓</div>
+<div class="text-center font-label text-[8px] text-on-surface-variant uppercase leading-tight">특방↓</div>
+<div class="text-center font-label text-[8px] text-on-surface-variant uppercase leading-tight">스피드↓</div>
+<!-- Rows (UP indicators) -->
+<div class="flex items-center justify-center font-label text-[8px] text-on-surface-variant uppercase">공격↑</div>
+<button class="nature-btn h-9 active bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="1" data-name="노력" data-up="1">노력</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="2" data-name="외로움" data-up="1">외로움</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="3" data-name="고집" data-up="1">고집</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="4" data-name="개구쟁이" data-up="1">개구쟁이</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="5" data-name="용감" data-up="1">용감</button>
+<div class="flex items-center justify-center font-label text-[8px] text-on-surface-variant uppercase">방어↑</div>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="1" data-name="대담" data-up="2">대담</button>
+<div class="h-9 bg-surface-container-low/20 border border-outline-variant/10 flex items-center justify-center opacity-30 text-[8px]">---</div>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="3" data-name="장난" data-up="2">장난</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="4" data-name="촐랑" data-up="2">촐랑</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="5" data-name="무사" data-up="2">무사</button>
+<div class="flex items-center justify-center font-label text-[8px] text-on-surface-variant uppercase">특공↑</div>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="1" data-name="조심" data-up="3">조심</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="2" data-name="의젓" data-up="3">의젓</button>
+<div class="h-9 bg-surface-container-low/20 border border-outline-variant/10 flex items-center justify-center opacity-30 text-[8px]">---</div>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="4" data-name="덜렁" data-up="3">덜렁</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="5" data-name="냉정" data-up="3">냉정</button>
+<div class="flex items-center justify-center font-label text-[8px] text-on-surface-variant uppercase">특방↑</div>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="1" data-name="차분" data-up="4">차분</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="2" data-name="얌전" data-up="4">얌전</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="3" data-name="신중" data-up="4">신중</button>
+<div class="h-9 bg-surface-container-low/20 border border-outline-variant/10 flex items-center justify-center opacity-30 text-[8px]">---</div>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="5" data-name="건방" data-up="4">건방</button>
+<div class="flex items-center justify-center font-label text-[8px] text-on-surface-variant uppercase">스피드↑</div>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="1" data-name="겁쟁이" data-up="5">겁쟁이</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="2" data-name="성급" data-up="5">성급</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="3" data-name="명랑" data-up="5">명랑</button>
+<button class="nature-btn h-9 bg-surface-container-low border border-outline-variant text-[9px] font-label" data-down="4" data-name="천진" data-up="5">천진</button>
+<div class="h-9 bg-surface-container-low/20 border border-outline-variant/10 flex items-center justify-center opacity-30 text-[8px]">---</div>
+</div>
+</div>
+</section>
+<!-- END: NatureMatrixSection -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: BottomNavBar -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center h-16 bg-surface-container-lowest/80 backdrop-blur-md pb-safe border-t border-outline-variant z-50">
+  <a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="팁.html">
+    <span class="material-symbols-outlined">lightbulb</span>
+    <span class="text-[10px]">팁</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-primary border-t-2 border-primary px-4 py-1" href="index.html">
+    <span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1;'>calculate</span>
+    <span class="text-[10px]">계산기</span>
+  </a>
+  <a href="저장소.html" id="nav-storage" class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors">
+    <span class="material-symbols-outlined">database</span>
+    <span class="text-[10px]">저장소</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+    <span class="material-symbols-outlined">settings</span>
+    <span class="text-[10px]">설정</span>
+  </a>
+</nav>
+<!-- BEGIN: ApplicationLogic -->
+<script data-purpose="app-logic">
+    // Mock Data
+    const pokemonData = [
+  {"n":"이상해꽃","s":[155,102,103,120,120,100]},
+  {"n":"메가이상해꽃","s":[155,120,143,142,140,100]},
+  {"n":"리자몽","s":[153,104,98,129,105,120]},
+  {"n":"메가리자몽X","s":[153,150,131,150,105,120]},
+  {"n":"메가리자몽Y","s":[153,124,98,179,135,120]},
+  {"n":"거북왕","s":[154,103,120,105,125,98]},
+  {"n":"메가거북왕","s":[154,123,140,155,135,98]},
+  {"n":"독침붕","s":[140,110,60,65,100,95]},
+  {"n":"메가독침붕","s":[140,170,60,35,100,165]},
+  {"n":"피죤투","s":[158,100,95,90,90,121]},
+  {"n":"메가피죤투","s":[158,100,100,155,100,141]},
+  {"n":"아보크","s":[135,115,89,85,99,100]},
+  {"n":"라이츄","s":[135,110,75,110,100,130]},
+  {"n":"메가라이츄X","s":[135,155,115,110,115,130]},
+  {"n":"메가라이츄Y","s":[135,120,75,180,100,150]},
+  {"n":"픽시","s":[170,90,93,115,110,80]},
+  {"n":"메가픽시","s":[170,100,113,155,130,90]},
+  {"n":"나인테일","s":[148,96,95,101,120,120]},
+  {"n":"라플레시아","s":[150,100,105,130,110,70]},
+  {"n":"윈디","s":[165,130,100,120,100,115]},
+  {"n":"후딘","s":[130,70,65,155,115,140]},
+  {"n":"메가후딘","s":[130,70,85,195,125,170]},
+  {"n":"괴력몬","s":[165,150,100,85,105,75]},
+  {"n":"우츠보트","s":[155,125,85,120,90,90]},
+  {"n":"메가우츠보트","s":[155,145,105,155,115,90]},
+  {"n":"야도란","s":[170,95,130,120,100,50]},
+  {"n":"메가야도란","s":[170,95,200,150,100,50]},
+  {"n":"팬텀","s":[135,85,80,150,95,130]},
+  {"n":"메가팬텀","s":[135,85,100,190,115,150]},
+  {"n":"캥카","s":[180,115,100,60,100,110]},
+  {"n":"메가캥카","s":[180,145,120,80,120,120]},
+  {"n":"아쿠스타","s":[135,95,105,120,105,135]},
+  {"n":"쁘사이저","s":[140,145,120,75,90,105]},
+  {"n":"메가쁘사이저","s":[140,175,140,85,110,125]},
+  {"n":"켄타로스","s":[150,120,115,60,90,130]},
+  {"n":"갸라도스","s":[170,145,99,80,120,101]},
+  {"n":"메가갸라도스","s":[170,175,129,90,150,101]},
+  {"n":"메타몽","s":[123,68,68,68,68,68]},
+  {"n":"샤미드","s":[205,85,80,130,115,85]},
+  {"n":"쥬피썬더","s":[140,85,80,130,115,150]},
+  {"n":"부스터","s":[140,150,80,115,130,85]},
+  {"n":"프테라","s":[155,125,85,80,95,150]},
+  {"n":"메가프테라","s":[155,155,105,90,115,170]},
+  {"n":"잠만보","s":[235,130,85,85,130,50]},
+  {"n":"메가망나뇽","s":[166,144,135,165,145,120]},
+  {"n":"메가니움","s":[155,102,120,103,120,100]},
+  {"n":"메가메가니움","s":[155,112,135,163,135,100]},
+  {"n":"블레이범","s":[153,104,98,129,105,120]},
+  {"n":"장크로다일","s":[160,125,120,99,103,98]},
+  {"n":"메가장크로다일","s":[160,180,145,109,113,98]},
+  {"n":"아리아도스","s":[145,110,90,80,90,60]},
+  {"n":"전룡","s":[165,95,105,135,110,75]},
+  {"n":"메가전룡","s":[165,115,125,185,130,65]},
+  {"n":"마릴리","s":[175,70,100,80,100,70]},
+  {"n":"왕구리","s":[165,95,95,110,120,90]},
+  {"n":"에브이","s":[140,85,80,150,115,130]},
+  {"n":"야도킹","s":[170,95,100,120,130,50]},
+  {"n":"쏘콘","s":[150,110,160,80,80,60]},
+  {"n":"강철톤","s":[150,105,220,75,85,50]},
+  {"n":"메가강철톤","s":[150,145,250,75,115,50]},
+  {"n":"침바루","s":[140,115,105,75,75,105]},
+  {"n":"핫삼","s":[145,150,120,75,100,85]},
+  {"n":"메가핫삼","s":[145,170,160,85,120,95]},
+  {"n":"헤라크로스","s":[155,145,95,60,115,105]},
+  {"n":"메가헤라크로스","s":[155,205,135,60,125,95]},
+  {"n":"무장조","s":[140,100,160,60,90,90]},
+  {"n":"헬가","s":[150,110,70,130,100,115]},
+  {"n":"메가헬가","s":[150,110,110,160,110,135]},
+  {"n":"마기라스","s":[175,154,130,115,120,81]},
+  {"n":"메가마기라스","s":[175,184,170,115,140,91]},
+  {"n":"나무킹","s":[145,105,85,125,105,140]},
+  {"n":"메가나무킹","s":[145,130,95,165,105,165]},
+  {"n":"번치코","s":[155,140,90,130,90,100]},
+  {"n":"메가번치코","s":[155,180,100,150,100,120]},
+  {"n":"대짱이","s":[175,130,110,105,110,80]},
+  {"n":"메가대짱이","s":[175,170,130,115,130,90]},
+  {"n":"패리퍼","s":[135,70,120,115,90,85]},
+  {"n":"가디안","s":[143,85,85,145,135,100]},
+  {"n":"메가가디안","s":[143,105,85,185,155,120]},
+  {"n":"깜까미","s":[125,95,95,85,85,70]},
+  {"n":"메가깜까미","s":[125,105,145,105,135,40]},
+  {"n":"입치트","s":[125,105,105,75,75,70]},
+  {"n":"메가입치트","s":[125,125,145,75,115,70]},
+  {"n":"보스로라","s":[145,130,200,80,80,70]},
+  {"n":"메가보스로라","s":[145,160,250,80,100,70]},
+  {"n":"요가램","s":[135,80,95,80,95,100]},
+  {"n":"메가요가램","s":[135,120,105,100,105,120]},
+  {"n":"썬더볼트","s":[145,95,80,125,80,125]},
+  {"n":"메가썬더볼트","s":[145,95,100,155,100,155]},
+  {"n":"샤크니아","s":[145,140,60,115,60,115]},
+  {"n":"메가샤크니아","s":[145,160,90,130,85,125]},
+  {"n":"폭타","s":[145,120,90,125,95,60]},
+  {"n":"메가폭타","s":[145,140,120,165,125,40]},
+  {"n":"코터스","s":[145,105,160,105,90,40]},
+  {"n":"파비코리","s":[150,90,110,90,125,100]},
+  {"n":"메가파비코리","s":[150,130,130,130,125,100]},
+  {"n":"밀로틱","s":[170,80,99,120,145,101]},
+  {"n":"캐스퐁","s":[145,90,90,90,90,90]},
+  {"n":"다크펫","s":[139,135,85,103,83,85]},
+  {"n":"메가다크펫","s":[139,185,95,113,103,95]},
+  {"n":"치렁","s":[150,70,100,115,110,85]},
+  {"n":"메가치렁","s":[150,70,130,155,140,85]},
+  {"n":"앱솔","s":[140,150,80,95,80,95]},
+  {"n":"메가앱솔","s":[140,170,80,135,80,135]},
+  {"n":"얼음귀신","s":[155,100,100,100,100,100]},
+  {"n":"메가얼음귀신","s":[155,140,100,140,100,120]},
+  {"n":"메타그로스","s":[155,155,150,115,110,90]},
+  {"n":"메가메타그로스","s":[155,165,170,125,130,130]},
+  {"n":"토대부기","s":[170,129,125,95,105,76]},
+  {"n":"초염몽","s":[151,124,91,130,91,128]},
+  {"n":"엠페르트","s":[159,106,108,131,121,80]},
+  {"n":"찌르호크","s":[160,140,90,70,80,120]},
+  {"n":"렌트라","s":[155,140,99,115,99,90]},
+  {"n":"로즈레이드","s":[135,90,85,145,125,110]},
+  {"n":"램펄드","s":[172,185,80,85,70,78]},
+  {"n":"바리톱스","s":[135,72,188,67,158,50]},
+  {"n":"이어롭","s":[140,96,104,74,116,125]},
+  {"n":"메가이어롭","s":[140,156,114,74,116,155]},
+  {"n":"화강돌","s":[125,112,128,112,128,55]},
+  {"n":"한카리아스","s":[183,150,115,100,105,122]},
+  {"n":"메가한카리아스","s":[183,190,135,140,115,112]},
+  {"n":"루카리오","s":[145,130,90,135,90,110]},
+  {"n":"메가루카리오","s":[145,165,108,160,90,132]},
+  {"n":"독개굴","s":[158,126,85,106,85,105]},
+  {"n":"눈설왕","s":[165,112,95,112,105,80]},
+  {"n":"메가눈설왕","s":[165,152,125,152,125,50]},
+  {"n":"포푸니라","s":[145,140,85,65,105,145]},
+  {"n":"거대코뿌리","s":[190,160,150,75,75,60]},
+  {"n":"리피아","s":[140,130,150,80,85,115]},
+  {"n":"글레이시아","s":[140,80,130,150,115,85]},
+  {"n":"글라이온","s":[150,115,145,65,95,115]},
+  {"n":"맘모꾸리","s":[185,150,100,90,80,100]},
+  {"n":"엘레이드","s":[143,145,85,85,135,100]},
+  {"n":"메가엘레이드","s":[143,185,115,85,135,130]},
+  {"n":"눈여아","s":[145,100,90,100,90,130]},
+  {"n":"샤로다","s":[150,95,115,95,115,133]},
+  {"n":"염무왕","s":[185,143,85,120,85,85]},
+  {"n":"메가염무왕","s":[185,168,95,130,130,95]},
+  {"n":"대검귀","s":[170,120,105,128,90,90]},
+  {"n":"보르그","s":[135,105,89,80,89,97]},
+  {"n":"레파르다스","s":[139,108,70,108,70,126]},
+  {"n":"야나키","s":[150,118,83,118,83,121]},
+  {"n":"바오키","s":[150,118,83,118,83,121]},
+  {"n":"앗차키","s":[150,118,83,118,83,121]},
+  {"n":"몽얌나","s":[191,75,105,127,115,49]},
+  {"n":"몰드류","s":[185,155,80,70,85,108]},
+  {"n":"다부니","s":[178,80,106,80,106,70]},
+  {"n":"메가다부니","s":[178,80,146,100,146,70]},
+  {"n":"노보청","s":[180,160,115,75,85,65]},
+  {"n":"엘풍","s":[135,87,105,97,95,136]},
+  {"n":"악비아르","s":[170,137,100,85,90,112]},
+  {"n":"데스니칸","s":[133,70,165,115,125,50]},
+  {"n":"더스트나","s":[155,115,102,80,102,95]},
+  {"n":"조로아크","s":[135,125,80,140,80,125]},
+  {"n":"란쿨루스","s":[185,85,95,145,105,50]},
+  {"n":"배바닐라","s":[146,115,105,130,115,99]},
+  {"n":"에몽가","s":[130,95,80,95,80,123]},
+  {"n":"샹델라","s":[135,75,110,165,110,100]},
+  {"n":"툰베어","s":[170,150,100,90,100,70]},
+  {"n":"메더","s":[184,86,104,101,119,52]},
+  {"n":"골루그","s":[164,144,100,75,100,75]},
+  {"n":"삼삼드래","s":[167,125,110,145,110,118]},
+  {"n":"불카모스","s":[160,80,85,155,125,120]},
+  {"n":"브리가론","s":[163,127,142,94,95,84]},
+  {"n":"메가브리가론","s":[163,157,192,94,135,64]},
+  {"n":"마폭시","s":[150,89,92,134,120,124]},
+  {"n":"메가마폭시","s":[150,89,92,179,145,154]},
+  {"n":"개굴닌자","s":[147,115,87,123,91,142]},
+  {"n":"메가개굴닌자","s":[147,145,97,153,101,162]},
+  {"n":"파르토","s":[160,76,97,70,97,98]},
+  {"n":"파이어로","s":[153,101,91,94,89,146]},
+  {"n":"비비용","s":[155,72,70,110,70,109]},
+  {"n":"화염레오","s":[161,88,92,129,86,126]},
+  {"n":"플라제스","s":[153,85,88,132,174,95]},
+  {"n":"부란다","s":[170,144,98,89,91,78]},
+  {"n":"트리미앙","s":[150,100,80,85,110,122]},
+  {"n":"냐오닉스","s":[149,68,96,103,101,124]},
+  {"n":"킬가르도","s":[135,70,160,70,160,80]},
+  {"n":"나루림","s":[157,100,106,105,95,92]},
+  {"n":"칼라마네로","s":[161,112,108,88,95,93]},
+  {"n":"거북손데스","s":[147,125,135,74,106,88]},
+  {"n":"블로스터","s":[146,93,108,140,109,79]},
+  {"n":"견고라스","s":[157,141,139,89,79,91]},
+  {"n":"아마루르가","s":[198,97,92,119,112,78]},
+  {"n":"님피아","s":[170,85,85,130,150,80]},
+  {"n":"루차불","s":[153,112,95,94,83,138]},
+  {"n":"데덴네","s":[142,78,77,101,87,121]},
+  {"n":"미끄래곤","s":[165,120,90,130,170,100]},
+  {"n":"클레피","s":[132,100,111,100,107,95]},
+  {"n":"대로트","s":[160,130,96,85,102,76]},
+  {"n":"펌킨인","s":[140,110,142,78,95,104]},
+  {"n":"크레베이스","s":[170,137,204,64,66,48]},
+  {"n":"음번","s":[160,90,100,117,100,143]},
+  {"n":"모크나이퍼","s":[153,127,95,120,120,90]},
+  {"n":"어흥염","s":[170,135,110,100,110,80]},
+  {"n":"누리레느","s":[155,94,94,146,136,80]},
+  {"n":"왕큰부리","s":[155,140,95,95,95,80]},
+  {"n":"만마드","s":[175,145,120,75,105,55]},
+  {"n":"깨비물거미","s":[143,90,112,70,152,62]},
+  {"n":"염뉴트","s":[143,84,80,131,80,137]},
+  {"n":"달코퀸","s":[147,140,118,70,118,92]},
+  {"n":"하랑우탄","s":[165,80,100,110,130,80]},
+  {"n":"내던숭이","s":[175,140,110,60,80,100]},
+  {"n":"따라큐","s":[130,110,100,70,125,116]},
+  {"n":"할비롱","s":[153,80,105,155,111,56]},
+  {"n":"메가할비롱","s":[153,105,130,180,136,56]},
+  {"n":"짜랑고우거","s":[150,130,145,120,125,105]},
+  {"n":"아머까오","s":[173,107,125,73,105,87]},
+  {"n":"단지래플","s":[185,105,100,120,100,50]},
+  {"n":"사다이사","s":[147,127,145,85,90,91]},
+  {"n":"포트데스","s":[135,85,85,154,134,90]},
+  {"n":"브리무음","s":[132,110,115,156,123,49]},
+  {"n":"오롱털","s":[170,140,85,115,95,80]},
+  {"n":"데스판","s":[133,115,165,70,125,50]},
+  {"n":"마임꽁꽁","s":[155,105,95,130,120,90]},
+  {"n":"마휘핑","s":[140,80,95,130,141,84]},
+  {"n":"대여르","s":[140,120,120,90,80,95]},
+  {"n":"메가대여르","s":[140,155,155,90,85,120]},
+  {"n":"모르페코","s":[133,115,78,90,78,117]},
+  {"n":"드래펄트","s":[163,140,95,120,95,162]},
+  {"n":"신비록","s":[178,125,92,125,95,85]},
+  {"n":"사마자르","s":[145,150,115,65,95,105]},
+  {"n":"포푸니크","s":[155,150,80,60,100,140]},
+  {"n":"장침바루","s":[160,135,115,85,85,105]},
+  {"n":"마스카나","s":[151,130,90,101,90,143]},
+  {"n":"라우드본","s":[179,95,120,130,95,86]},
+  {"n":"파밀리쥐","s":[149,95,90,85,95,131]},
+  {"n":"콜로솔트","s":[175,120,150,65,110,55]},
+  {"n":"카디나르마","s":[160,80,120,145,100,95]},
+  {"n":"파라블레이즈","s":[150,145,100,80,120,105]},
+  {"n":"메가스코빌란","s":[140,158,105,158,105,95]},
+  {"n":"메가킬라플로르","s":[158,110,125,170,116,121]},
+  {"n":"묘두기","s":[147,121,120,70,117,88]},
+  {"n":"저승갓숭","s":[185,135,100,70,110,110]}
+    ];
+
+    const searchInput = document.getElementById('pokemon-search');
+    const searchResults = document.getElementById('search-results');
+    const statsDisplay = document.getElementById('pokemon-stats-display');
+    const placeholderText = document.getElementById('placeholder-text');
+    const selectedPokemonName = document.getElementById('selected-pokemon-name');
+    const saveBtn = document.getElementById('save-btn');
+    const itemSelect = document.getElementById('item-select');
+    
+    let currentPokemon = null;
+    let currentNature = { up: 1, down: 1, name: '노력' };
+
+    function renderResults(results) {
+      searchResults.innerHTML = '';
+      if (results.length === 0) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+      results.forEach((pokemon) => {
+        const li = document.createElement('li');
+        li.className = 'px-3 py-3 text-xs font-label cursor-pointer hover:bg-surface-variant transition-colors border-b border-outline-variant/30 last:border-0 uppercase';
+        li.textContent = pokemon.n;
+        li.addEventListener('click', () => selectPokemon(pokemon));
+        searchResults.appendChild(li);
+      });
+      searchResults.classList.remove('hidden');
+    }
+
+    function selectPokemon(pokemon) {
+      currentPokemon = pokemon;
+      searchInput.value = pokemon.n;
+      searchResults.classList.add('hidden');
+      selectedPokemonName.textContent = pokemon.n;
+      updateStats();
+      statsDisplay.style.display = 'block';
+      placeholderText.style.display = 'none';
+    }
+
+    // 스탯 계산 및 화면 업데이트 함수
+    function updateStats() {
+      if (!currentPokemon) return;
+      
+      const spInputs = document.querySelectorAll('.sp-input');
+      const statIds = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+      let totalValue = 0;
+      
+      currentPokemon.s.forEach((baseStat, index) => {
+        const spVal = parseInt(spInputs[index].value) || 0;
+        let finalStat = baseStat + spVal;
+        
+        // 1. 성격 보정 적용 (HP 제외)
+        if (index > 0) {
+          if (index === currentNature.up && index !== currentNature.down) {
+            finalStat = Math.floor(finalStat * 1.1); // 상승 1.1배
+          } else if (index === currentNature.down && index !== currentNature.up) {
+            finalStat = Math.floor(finalStat * 0.9); // 하락 0.9배
+          }
+        }
+        
+        // 2. 아이템 보정 적용 (스피드 스카프: index 5)
+        if (index === 5 && itemSelect.value === '구애스카프') {
+          finalStat = Math.floor(finalStat * 1.5); // 스피드 1.5배
+        }
+        
+        totalValue += finalStat;
+        document.getElementById(`stat-val-${statIds[index]}`).textContent = finalStat;
+        const barWidth = Math.min((finalStat / 250) * 100, 100);
+        const bar = document.getElementById(`stat-bar-${statIds[index]}`);
+        if(bar) bar.style.width = `${barWidth}%`;
+      });
+      
+      document.getElementById('total-base-stats').textContent = totalValue;
+    }
+
+    // Search Logic
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.trim().toLowerCase();
+      if (query) {
+        const filtered = pokemonData.filter(p => p.n.includes(query)).slice(0, 8);
+        renderResults(filtered);
+      } else {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    searchInput.addEventListener('focus', () => {
+      if (searchInput.value.trim()) {
+        const filtered = pokemonData.filter(p => p.n.includes(searchInput.value.trim())).slice(0, 8);
+        renderResults(filtered);
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('search-container').contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    // 아이템 선택 시 계산식 즉시 재적용
+    itemSelect.addEventListener('change', updateStats);
+
+    // Nature Logic
+    const buttons = document.querySelectorAll('.nature-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        buttons.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentNature.up = parseInt(this.getAttribute('data-up'));
+        currentNature.down = parseInt(this.getAttribute('data-down'));
+        currentNature.name = this.getAttribute('data-name');
+        updateStats();
+      });
+    });
+
+    // SP Input Logic
+    const spInputs = document.querySelectorAll('.sp-input');
+    const spTotalText = document.getElementById('sp-total-text');
+    const spTotalBar = document.getElementById('sp-total-bar');
+
+    spInputs.forEach(input => {
+      input.addEventListener('input', function() {
+        let val = parseInt(this.value) || 0;
+        if (val < 0) val = 0;
+        if (val > 32) val = 32;
+        this.value = val;
+        
+        let currentSum = 0;
+        spInputs.forEach(inp => currentSum += (parseInt(inp.value) || 0));
+        
+        if (currentSum > 66) {
+          const excess = currentSum - 66;
+          val -= excess;
+          this.value = Math.max(0, val);
+          currentSum = 66;
+        }
+        
+        spTotalText.textContent = `TOTAL ${currentSum} / 66`;
+        spTotalBar.style.width = `${(currentSum / 66) * 100}%`;
+        updateStats();
+      });
+    });
+
+    // SAVE Button Logic (성격 + 스카프 계산된 실수치 저장)
+    saveBtn.addEventListener('click', () => {
+      if (!currentPokemon) {
+        alert('포켓몬을 선택해주세요.');
+        return;
+      }
+
+      const spAllocation = {
+        hp: parseInt(document.querySelector('[data-label="HP"]').value) || 0,
+        atk: parseInt(document.querySelector('[data-label="Attack"]').value) || 0,
+        def: parseInt(document.querySelector('[data-label="Defense"]').value) || 0,
+        spa: parseInt(document.querySelector('[data-label="Sp. Atk"]').value) || 0,
+        spd: parseInt(document.querySelector('[data-label="Sp. Def"]').value) || 0,
+        spe: parseInt(document.querySelector('[data-label="Speed"]').value) || 0
+      };
+
+      const entry = {
+        id: Date.now().toString(),
+        name: currentPokemon.n,
+        nature: currentNature.name,
+        sp: spAllocation,
+        stats: {
+          hp: document.getElementById('stat-val-hp').textContent,
+          atk: document.getElementById('stat-val-atk').textContent,
+          def: document.getElementById('stat-val-def').textContent,
+          spa: document.getElementById('stat-val-spa').textContent,
+          spd: document.getElementById('stat-val-spd').textContent,
+          spe: document.getElementById('stat-val-spe').textContent
+        },
+        item: itemSelect.value,
+        date: new Date().toLocaleDateString()
+      };
+
+      let existingData = JSON.parse(localStorage.getItem('pokemon_saves') || '[]');
+      existingData.push(entry);
+      localStorage.setItem('pokemon_saves', JSON.stringify(existingData));
+      
+      window.location.href = '저장소.html'; 
+    });
+</script>
+<!-- END: ApplicationLogic -->
+</body></html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>VALOR_OS // 저장소</title>
+<!-- BEGIN: External Resources -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;family=Inter:wght@400;500;700&amp;family=Jetbrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- END: External Resources -->
+<!-- BEGIN: Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed-variant": "#454747",
+                        "inverse-on-surface": "#2f3131",
+                        "surface-dim": "#121414",
+                        "on-primary-fixed": "#1a1c1c",
+                        "error": "#ffb4ab",
+                        "surface-container-highest": "#333535",
+                        "primary-container": "#000000",
+                        "on-background": "#e2e2e2",
+                        "on-error": "#690005",
+                        "surface-container-high": "#282a2b",
+                        "outline": "#988e90",
+                        "tertiary-container": "#000000",
+                        "secondary-fixed": "#e2e2e2",
+                        "tertiary-fixed-dim": "#c6c6c6",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "inverse-primary": "#5d5f5f",
+                        "secondary": "#c6c6c7",
+                        "on-tertiary-container": "#757575",
+                        "primary": "#c6c6c7",
+                        "inverse-surface": "#e2e2e2",
+                        "primary-fixed": "#e2e2e2",
+                        "on-surface": "#e2e2e2",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed": "#e2e2e2",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#1a1c1c",
+                        "on-primary-container": "#747576",
+                        "surface-tint": "#c6c6c7",
+                        "secondary-container": "#454747",
+                        "outline-variant": "#4c4546",
+                        "tertiary": "#c6c6c6",
+                        "on-secondary-container": "#b4b5b5",
+                        "background": "#121414",
+                        "surface-container-lowest": "#0c0f0f",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "on-surface-variant": "#cfc4c5",
+                        "on-secondary": "#2f3131",
+                        "surface-container": "#1e2020",
+                        "on-tertiary-fixed": "#1b1b1b",
+                        "surface": "#121414",
+                        "on-tertiary": "#303030",
+                        "on-primary": "#2f3131",
+                        "surface-bright": "#38393a",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "surface-variant": "#333535",
+                        "on-primary-fixed-variant": "#454747"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "display": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Jetbrains Mono"]
+                    }
+                }
+            }
+        };
+    </script>
+<!-- END: Tailwind Configuration -->
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="global-ui">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #0c0f0f;
+            color: #e2e2e2;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        * { cursor: crosshair !important; }
+        input:focus, select:focus { cursor: text !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<script>
+        const STORAGE_KEY = 'pokemon_saves';
+
+        function getStoredData() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveToStorage(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function deleteEntry(id) {
+            if (!confirm('정말 이 데이터를 삭제하시겠습니까?')) return;
+            const data = getStoredData();
+            // Update 3: Compare using toString() for robustness
+            const filteredData = data.filter(item => item.id.toString() !== id.toString());
+            saveToStorage(filteredData);
+            renderData();
+        }
+
+        function renderData() {
+            const container = document.getElementById('data-container');
+            const emptyState = document.getElementById('empty-state');
+            const data = getStoredData();
+            
+            // Clear existing dynamic entries
+            const existingEntries = container.querySelectorAll('.dynamic-entry');
+            existingEntries.forEach(el => el.remove());
+
+            if (data.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            // Update 1 & 5: Using specific item keys and card layout
+            data.forEach(item => {
+                const card = document.createElement('section');
+                card.className = 'dynamic-entry bg-surface-container-low border border-outline-variant rounded overflow-hidden shadow-xl flex flex-col mb-6';
+                
+                const statLabels = {
+                    hp: '체력',
+                    atk: '공격',
+                    def: '방어',
+                    spa: '특공',
+                    spd: '특방',
+                    spe: '스피드'
+                };
+
+                // Grid of calculated stats (item.stats)
+                const statsHtml = Object.entries(item.stats || {}).map(([key, val]) => `
+                    <div class="flex justify-between items-center py-1.5 border-b border-outline-variant/10">
+                        <span class="font-label text-[10px] text-outline uppercase">${statLabels[key] || key}</span>
+                        <span class="font-label text-xs font-bold text-on-surface">${val}</span>
+                    </div>
+                `).join('');
+
+                // Update 2: Filter SP values > 0
+                const spPillsHtml = Object.entries(item.sp || {})
+                    .filter(([_, v]) => v > 0)
+                    .map(([k, v]) => `
+                        <div class="bg-surface-container-highest/40 px-2 py-0.5 rounded border border-outline-variant/20 flex items-center gap-1.5">
+                            <span class="font-label text-[9px] text-outline uppercase">${statLabels[k] || k}</span>
+                            <span class="font-label text-[10px] font-bold text-primary">${v}</span>
+                        </div>
+                    `).join('');
+
+                card.innerHTML = `
+                    <div class="p-4 space-y-4 relative pt-6">
+                        <div class="flex justify-between items-center mb-1">
+                            <div class="px-2 py-0.5 bg-surface-container-lowest/80 border border-outline-variant rounded text-[10px] font-label text-primary/70 uppercase">UID: ${item.id}</div>
+                            <button onclick="deleteEntry('${item.id}')" class="text-on-surface-variant hover:text-error transition-colors p-1">
+                                <span class="material-symbols-outlined text-lg">delete</span>
+                            </button>
+                        </div>
+                        
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h2 class="font-display text-2xl font-bold text-primary tracking-tight leading-tight">${item.name}</h2>
+                                <p class="font-label text-[10px] text-primary/60 uppercase mt-0.5">NATURE: ${item.nature || '신중'}</p>
+                            </div>
+                            <p class="font-label text-[9px] text-outline uppercase mt-2">MOD: ${item.date || new Date().toLocaleDateString()}</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-x-6 gap-y-0.5 bg-surface-container-lowest/40 p-3 rounded border border-outline-variant/30">
+                            ${statsHtml}
+                        </div>
+
+                        <div class="space-y-2">
+                            <p class="font-label text-[9px] text-outline uppercase opacity-60">SP_ALLOCATION</p>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${spPillsHtml || '<span class="text-[10px] text-outline/50 italic font-label">NO_SP_ALLOCATED</span>'}
+                            </div>
+                        </div>
+
+                        <button class="w-full bg-primary text-surface-container-lowest py-3 rounded font-label text-xs font-bold uppercase hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-2">
+                            <span class="material-symbols-outlined text-sm">download</span> LOAD_DATA
+                        </button>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', renderData);
+    </script>
+</head>
+<body class="bg-surface-container-lowest text-on-surface selection:bg-primary/30 min-h-screen font-body pb-20">
+<!-- BEGIN: TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="database">database</span>
+<h1 class="font-display text-xl text-primary tracking-tighter uppercase font-bold">저장소</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" data-icon="account_circle">account_circle</span>
+</div>
+</header>
+<!-- END: TopAppBar -->
+<!-- BEGIN: MainContent -->
+<main class="pt-20 pb-24 px-4 w-full max-w-lg mx-auto space-y-6" id="data-container">
+<!-- Search Bar -->
+<section class="space-y-1 relative">
+<label class="font-label text-[10px] text-on-surface-variant uppercase ml-1 opacity-70">샘플 리스트</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border border-outline-variant rounded p-3 text-sm focus:border-primary outline-none font-label uppercase" placeholder="샘플 검색..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-3 text-outline text-sm pointer-events-none" data-icon="search">search</span>
+</div>
+</section>
+<!-- Empty State -->
+<div class="hidden border border-dashed border-outline-variant/40 rounded h-64 flex flex-col items-center justify-center bg-surface-container-low/20 space-y-3" id="empty-state">
+<span class="material-symbols-outlined text-outline/30 text-5xl">database_off</span>
+<div class="text-center">
+<span class="block font-label text-[10px] text-outline/50 uppercase tracking-widest">저장된 샘플이 없습니다</span>
+<span class="block font-label text-[8px] text-outline/30 uppercase mt-1">NO_LOCAL_RECORDS_FOUND</span>
+</div>
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: BottomNavBar -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center h-16 bg-surface-container-lowest/80 backdrop-blur-md pb-safe border-t border-outline-variant z-50">
+  <a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="팁.html">
+    <span class="material-symbols-outlined">lightbulb</span>
+    <span class="font-label text-[10px] uppercase">팁</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="index.html">
+    <span class="material-symbols-outlined">calculate</span>
+    <span class="font-label text-[10px] uppercase">계산기</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-primary border-t-2 border-primary px-4 py-1 transition-all" href="저장소.html">
+    <span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1;'>database</span>
+    <span class="font-label text-[10px] uppercase">저장소</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-colors" href="#">
+    <span class="material-symbols-outlined">settings</span>
+    <span class="font-label text-[10px] uppercase">설정</span>
+  </a>
+</nav>
+<!-- END: BottomNavBar -->
+</body></html>
